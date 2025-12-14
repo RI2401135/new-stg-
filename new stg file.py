@@ -13,7 +13,7 @@ def get_message(max_bits):
         message = input("Enter the secret message to hide:")
         bits=''.join(format(ord(c),'08b') for c in message)+'00000000'
         if len(bits)> max_bits:
-            print("Error: message too long for this image. Please enter a shorter message. ")
+            print("Error: message too long for this image.")
         else:
             return bits
 
@@ -22,8 +22,8 @@ def encode_message(image_path):
         data = f.read()
 
     header_size = 54
-    max_bits = (len(data) - header_size)  # 1 bit per byte
-    bits = get_message_bits(max_bits)
+    max_bits = (len(data) - header_size)  
+    bits = get_message(max_bits)
 
     out = bytearray(data)
     bit_index = 0
@@ -36,7 +36,10 @@ def encode_message(image_path):
     output_path = "hidden_message.bmp"
     with open(output_path, 'wb') as f:
         f.write(out)
-    print("Message hidden successfully in:", output_path)    
+    print("Message hidden successfully in:", output_path)   
+    print(f"saved as '{output_path}'.")
+    return output_path
+
 
 
 def decode_message(image_path):
@@ -48,7 +51,6 @@ def decode_message(image_path):
     for i in range(header_size, len(data)):
         bits += str(data[i] & 1)
 
-    # Convert bits to text until NULL terminator
     message = ''
     for i in range(0, len(bits), 8):
         byte = bits[i:i+8]
@@ -56,20 +58,35 @@ def decode_message(image_path):
             break
         message += chr(int(byte, 2))
 
-    print("Decoded message:", message)
+    print(f"Decoded message:", {message})
+
+
 
 def main():
-    choice= input(" do you want to hide a message or reveal a message?").strip().lower()
-    if choice not in ['hide','reveal']:
-        print("error. Please restart the program.")
-        return 
-    
-    image_path= get_image_path()
+    while True:
+        choice = input("\nChoose an action: encode / decode / exit : ").strip().lower()
 
-    if choice == 'hide':
-        encode_message(image_path)
-    else:
-        decode_message(image_path)
-    
-if __name__=="__main__":
-    main()
+        if choice == 'exit':
+            print("Goodbye.")
+            break
+
+        elif choice == 'encode':
+            print("Enter the path to the BMP image file: ", end="")
+            image_path = get_image_path()  
+
+            stego_path = encode_message(image_path)
+
+            if stego_path:
+                print(f"\nSaved as '{stego_path}'. Do you want to decode it now? (y/n): y")
+                decode_message(stego_path)
+                print("\nDo you want to use the program again? (y/n): y")
+               
+
+        elif choice == 'decode':
+            print("Enter the path to the stego BMP file: ", end="")
+            stego_path = get_image_path()
+            decode_message(stego_path)
+            print("\nDo you want to use the program again? (y/n): y")
+
+        else:
+            print("Invalid choice. Please type: encode / decode / exit.")
