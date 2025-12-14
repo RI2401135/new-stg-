@@ -19,57 +19,44 @@ def get_message(max_bits):
 
 def encode_message(image_path):
     with open(image_path,'rb') as f:
-        file_content =f.read()
+        data = f.read()
 
-    width=int.from_bytes(file_content[18:22], byteorder='little')
-    height=int.from_bytes(file_content[22:26],byteorder='little')
-    bytes_offset=int.from_bytes(file_content[10:14],byteorder='little')
-    bits_per_pixel=int.from_bytes(file_content[28:30],byteorder='little')
-    bytes_per_pixel= bits_per_pixel//8 
-    n= bytes_per_pixel
+    header_size = 54
+    max_bits = (len(data) - header_size)  # 1 bit per byte
+    bits = get_message_bits(max_bits)
 
-    max_bits= width * height * n 
-    bits =get_message(max_bits)
-
-    file_content=list(file_content)
-    bits_index=0 
-    for i in range (bytes_offset, len(file_content),byteorder='little'):
-        for channel in range (n):
-            if bits_index <len(bits):
-                file_content[i + channel] =(file_content[i + channel]&~1) | int(bits[bit_index]) 
-                bits_index+=1
-            else:
-                break
-        if bit_index>=len(bits):
+    out = bytearray(data)
+    bit_index = 0
+    for i in range(header_size, len(out)):
+        if bit_index >= len(bits):
             break
-    output_path="hidden_message.bmp"
-    with open(image_path,'wb') as f:
-        f.write(bytes(files_content))
-    print(f"Message hidden successfully in {output_path}")
+        out[i] = (out[i] & 0xFE) | int(bits[bit_index])
+        bit_index += 1
+
+    output_path = "hidden_message.bmp"
+    with open(output_path, 'wb') as f:
+        f.write(out)
+    print("Message hidden successfully in:", output_path)    
 
 
 def decode_message(image_path):
     with open(output_path,'rb')as f:
-        file_content=f.read()
+        data = f.read()
 
-        bytes_offset=int.from_bytes(file_content[10:14],byteorder='little')
-        bits_per_pixel=int.from_bytes(file_content[28:30],byteorder='little')
-        bytes_per_pixel=bits_per_pixel//8
-        n=bytes_per_pixel
+    header_size = 54
+    bits = ''
+    for i in range(header_size, len(data)):
+        bits += str(data[i] & 1)
 
-        bits=''
-        for i in range(bytes_offset,len(file_content),bytes_per_pixel):
-            for channel in range(n):
-                bits+= str(file_content[i + channel]& 1 )
+    # Convert bits to text until NULL terminator
+    message = ''
+    for i in range(0, len(bits), 8):
+        byte = bits[i:i+8]
+        if byte == '00000000':
+            break
+        message += chr(int(byte, 2))
 
-        decode_message=''
-        for i in range(0,len(bits),8):
-            byte =bits[i:i +8]
-            if byte=='00000000':
-                break
-            decoded_message+= chr(int(byte,2))
-        
-        print("Decoded message:", decoded_message )
+    print("Decoded message:", message)
 
 def main():
     choice= input(" do you want to hide a message or reveal a message?").strip().lower()
