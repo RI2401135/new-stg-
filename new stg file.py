@@ -48,3 +48,26 @@ def encode_message(image_path):
     print(f"Message hidden successfully in {output_path}")
 
 
+def decode_message(image_path):
+    with open(output_path,'rb')as f:
+        file_content=f.read()
+
+        bytes_offset=int.from_bytes(file_content[10:14],byteorder='little')
+        bits_per_pixel=int.from_bytes(file_content[28:30],byteorder='little')
+        bytes_per_pixel=bits_per_pixel//8
+        n=bytes_per_pixel
+
+        bits=''
+        for i in range(bytes_offset,len(file_content),bytes_per_pixel):
+            for channel in range(n):
+                bits+= str(file_content[i + channel]& 1 )
+
+        decode_message=''
+        for i in range(0,len(bits),8):
+            byte =bits[i:i +8]
+            if byte=='00000000':
+                break
+            decoded_message+= chr(int(byte,2))
+        
+        print("Decoded message:", decoded_message )
+
