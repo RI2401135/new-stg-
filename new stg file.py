@@ -71,5 +71,5 @@ def main():
     else:
         decode_message(image_path)
     
-if__name_=="__main__":
+if __name__=="__main__":
     main()
