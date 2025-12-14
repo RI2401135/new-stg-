@@ -71,3 +71,18 @@ def decode_message(image_path):
         
         print("Decoded message:", decoded_message )
 
+def main():
+    choice= input(" do you want to hide a message or reveal a message?").strip().lower()
+    if choice not in ['hide','reveal']:
+        print("error. Please restart the program.")
+        return 
+    
+    image_path= get_image_path()
+
+    if choice == 'hide':
+        encode_message(image_path)
+    else:
+        decode_message(image_path)
+    
+if__name_=="__main__":
+    main()
