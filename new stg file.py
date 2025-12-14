@@ -43,7 +43,7 @@ def encode_message(image_path):
 
 
 def decode_message(image_path):
-    with open(output_path,'rb')as f:
+    with open(image_path,'rb')as f:
         data = f.read()
 
     header_size = 54
@@ -59,34 +59,28 @@ def decode_message(image_path):
         message += chr(int(byte, 2))
 
     print(f"Decoded message:", {message})
-
-
-
+    
 def main():
-    while True:
-        choice = input("\nChoose an action: encode / decode / exit : ").strip().lower()
+    choice = input("do you want to hide a message or reveal a message or exit the program?").strip().lower()
 
-        if choice == 'exit':
-            print("Goodbye.")
-            break
+    if choice not in ['hide', 'reveal', 'exit']:
+        print("error. Please restart the program.")
+        return
 
-        elif choice == 'encode':
-            print("Enter the path to the BMP image file: ", end="")
-            image_path = get_image_path()  
+    if choice == 'exit':
+        print("exiting program.")
+        return
 
-            stego_path = encode_message(image_path)
+    image_path = get_image_path()
 
-            if stego_path:
-                print(f"\nSaved as '{stego_path}'. Do you want to decode it now? (y/n): y")
-                decode_message(stego_path)
-                print("\nDo you want to use the program again? (y/n): y")
-               
-
-        elif choice == 'decode':
-            print("Enter the path to the stego BMP file: ", end="")
-            stego_path = get_image_path()
+    if choice == 'hide':
+        stego_path = encode_message(image_path)
+        if stego_path:
+            print(f"\nSaved as '{stego_path}'. Do you want to decode it now? ")
             decode_message(stego_path)
-            print("\nDo you want to use the program again? (y/n): y")
+    elif choice == 'reveal':
+        decode_message(image_path)
 
-        else:
-            print("Invalid choice. Please type: encode / decode / exit.")
+    
+if __name__=="__main__":
+    main() 
